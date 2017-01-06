@@ -1,0 +1,18 @@
+{
+  "name": "HristBot",
+  "version": "0.0.0.1",
+  "author": "Oasiris",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Oasiris/HristBot.git"
+  },
+  "license": "CCPL",
+  "dependencies": {
+    "discord.js": "hydrabolt/discord.js#11.0.0",
+    "unirest": "*",
+  },
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "main": "bot.js"
+}
