@@ -1,0 +1,2 @@
+HristBot - Gaming Discord Bot
+====
