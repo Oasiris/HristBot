@@ -1,11 +1,15 @@
 
-
+// Core dependencies
 const Discord = require('discord.js');
 const bot = new Discord.Client();
-
 const authJson = require('./auth.json');
 const token = authJson.token;
+
+// Extra dependencies
 const unirest = require("unirest");
+
+// Imported data JSONs
+const simpleDex = require("./data/simplePokedex-v1");
 
 var newUsers = new Discord.Collection();
 
@@ -89,8 +93,17 @@ bot.on('message', (msg) => {
     args = msg.content.split(" ").slice(1);
   }
 
+  // Compile all commands into a list
+  var listOfCommands = mergeCommands([commandsInfo, commandsPokemon]);
+
+  // SPECIAL COMMAND: "help" or "commands"
+  if (cmdText == "help" || cmdText == "commands") {
+    commandsHelp.help.process(bot, msg, listOfCommands);
+    return;
+  }
+
   // using the bot (Client) and the original message context, run the command.
-  let cmd = commandsInfo[cmdText];
+  let cmd = listOfCommands[cmdText];
   if (!cmd) {
     msg.channel.sendMessage(`Sorry, I don't recognize this as a valid command: \`${cmdText}\`.`);
   } else {
@@ -103,9 +116,37 @@ bot.on('message', (msg) => {
 
 
 /****************************************************/
-/* EVENTS (DISCONNECTION) --------------------------*/
+/* LIST OF COMMANDS --------------------------------*/
 /****************************************************/
 // All commands are in lowercase. Inputs will be converted to lowercase.
+
+var commandsHelp = {  
+  "help": {
+    description: "Displays every other command with a helpful description.",
+    process: (bot, oMsg, listOfCommands) => {
+      var res = "Here's all of the commands I have:\n\n";
+      for (c in listOfCommands) {
+        // If the command has a "usage" key, spit that out too.
+        // Example: '  • @Aqua servers - Lists servers this bot is currently connected to.'a
+        var usage = listOfCommands[c].usage;
+        if (!usage) usage = "";
+        else usage = " " + usage;
+
+        var desc = listOfCommands[c].description;
+        if (!desc) desc = "";
+        else desc = "- " + desc;
+
+        res += `  • \`${myPrefix}${c}${usage}\` ${desc}\n`;
+      } // end for loop
+      oMsg.channel.sendMessage(res);
+      return;
+    }
+  }
+
+
+
+};
+
 
 var commandsInfo = {
   "who": {
@@ -129,10 +170,20 @@ var commandsInfo = {
     process: (bot, oMsg) => {
       let nickname = getNickname(oMsg.author.id, oMsg.guild);
       if (!nickname) {
-        oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, you don't appear to have a nickname on this guild!`);
+        oMsg.channel.sendMessage(`${oMsg.author.username}, you don't appear to have a nickname on this guild!`);
       } else {
-        oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, your nickname on this server seems to be ${nickname}!`);
+        oMsg.channel.sendMessage(`${oMsg.author.username}, your nickname on this server seems to be ${nickname}!`);
       }
+
+      return;
+    }
+  },
+
+  "abeljohn": {
+    description: "Summon an image of our leader and savior, Abel John Jacob.",
+    process: (bot, oMsg) => {
+      let imageUrl = "http://i.imgur.com/JqKzbUw.jpg";
+      oMsg.channel.sendMessage(imageUrl);
 
       return;
     }
@@ -153,18 +204,85 @@ var commandsInfo = {
     }
   },
 
+
+};
+
+/*
+guild.roles.map((roleObject) => {
+
+
+
+return roleObject;
+});
+
+check for:
+hoist
+members (in collection form)
+name
+position
+mentionable
+permissions
+*/
+
+var commandsPokemon = {
+
   "pokedex": {
-    description: "Search the pokedex for a pokemon species based on dex number.",
-    usage: "<National Dex number>",
+    description: "Shows general information on a given Pokemon species.",
+    usage: "<Pokemon name OR National Dex number>",
     process: (bot, oMsg, args) => {
       // Make sure input is valid
-      if (args.length < 1 || isNaN(args[0])) {
-        oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, :writing_hand: :1234:`);
+      if (args.length != 1) {
+        oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, please supply either a Dex number or a Pokemon name.`);
         return;
-      }
+      };
 
+      var typeString = "";
+      var nextEvoString = "Evolves to ";
+      var simpleData; // Data on the specified Pokemon, as retrieved from the simpleDex
+
+      // If pokemon name is entered, search local pokemon registry to dex number
+      if (isNaN(args[0])) {
+        let tempDex = simpleDex;
+        tempDex = tempDex.filter((ele) => {
+          return (ele.name.toLowerCase().indexOf(args[0].toLowerCase()) != -1);
+        });
+
+        if (tempDex.length == 1) { // The correct match
+          simpleData = args[0];
+          args[0] = tempDex[0].national_id;
+        } else if (tempDex.length == 0) { // Misc. error handling
+          oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, I couldn't find that Pokemon. Check your spelling and try again.`);
+          return;
+        } else if (tempDex.length > 10) {
+          oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, more than 10 Pokemon match the query, "${args[0]}". Please make your search more specific.`);
+          return;
+        } else { // number of matches is between 2 and 10
+          var res = `<@!${oMsg.author.id}>, your query returned multiple results. See below:\n\n`;
+          for (p in tempDex) { // note: p is a numeral index
+            res += `  • ${tempDex[p].name}\n`;
+          };
+          res += "\nCheck your spelling and try again.";
+          oMsg.channel.sendMessage(res);
+          return;
+        }
+      };
+
+
+      // // Retrieve simpleDex data object, simpleData
+      // if (!isNaN(args[0])) {
+      //   let tempDex = simpleDex;
+      //   tempDex = templeDex.fliter((ele) => {
+      //     return args[0] == ele.national_id;
+      //   });
+      //   if () {
+      //     simpleData = simpleDex[0];
+      //   }
+      // }
+
+
+
+      // GET request to PokeAPI v2
       var RequestPokeapi = unirest.get("http://pokeapi.co/api/v2/pokemon-species/" + args[0]);
-
       RequestPokeapi.header({
         'Accept': 'application/json',
         'User-Agent': 'Unirest Node.js for Oasiris\'s Discord HristBot'
@@ -176,7 +294,7 @@ var commandsInfo = {
         if (!data || data.detail == "Not found.") {
           oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, please supply a valid Pokedex ID. Note that Sun/Moon pokemon are not yet available!`); 
           return;
-        }
+        };
 
         // Some pre-processing to keep code organized
         // Padding the ID
@@ -185,13 +303,13 @@ var commandsInfo = {
 
         // Gender
         var genderDetails;
-        if (data.gender_rate == -1)
+        if (data.gender_rate == -1) {
           genderDetails = "Genderless";
-        else {
+        } else {
           var femaleRate = Math.round(data.gender_rate / 8 * 1000) / 10;
           var maleRate = 100 - femaleRate;
           genderDetails = `${maleRate}% male, ${femaleRate}% female`;
-        }
+        };
 
         // Hatch steps
         var minHatch, maxHatch, hatchArray = new Array(4);
@@ -263,29 +381,52 @@ var commandsInfo = {
     }
   },
 
+  "battledex": {
+    description: "Shows battle-related information on a given Pokemon species.",
+    usage: "<Pokemon name OR National Dex number>",
+    process: (bot, oMsg, args) => {
+      // Make sure input is valid
+      if (args.length != 1) {
+        oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, please supply either a Dex number or a Pokemon name.`);
+        return;
+      };
 
-/*
-guild.roles.map((roleObject) => {
+      var typeString = "";
+      var nextEvoString = "Evolves to ";
+      var simpleData; // Data on the specified Pokemon, as retrieved from the simpleDex
+
+      // If pokemon name is entered, search local pokemon registry to dex number
+      if (isNaN(args[0])) {
+        let tempDex = simpleDex;
+        tempDex = tempDex.filter((ele) => {
+          return (ele.name.toLowerCase().indexOf(args[0].toLowerCase()) != -1);
+        });
+
+        if (tempDex.length == 1) { // The correct match
+          simpleData = args[0];
+          args[0] = tempDex[0].national_id;
+        } else if (tempDex.length == 0) { // Misc. error handling
+          oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, I couldn't find that Pokemon. Check your spelling and try again.`);
+          return;
+        } else if (tempDex.length > 10) {
+          oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, more than 10 Pokemon match the query, "${args[0]}". Please make your search more specific.`);
+          return;
+        } else { // number of matches is between 2 and 10
+          var res = `<@!${oMsg.author.id}>, your query returned multiple results. See below:\n\n`;
+          for (p in tempDex) { // note: p is a numeral index
+            res += `  • ${tempDex[p].name}\n`;
+          };
+          res += "\nCheck your spelling and try again.";
+          oMsg.channel.sendMessage(res);
+          return;
+        }
+      };
+    } // ends process
+  },
 
 
+};
 
-return roleObject;
-});
-
-check for:
-hoist
-members (in collection form)
-name
-position
-mentionable
-permissions
-*/
-
-
-
-
-
-}
 
 /****************************************************/
 /* HELPER COMMANDS ---------------------------------*/
@@ -298,11 +439,28 @@ var getNickname = (str, guild) => {
   return guild.members.get(str).nickname;
 };
 
+
+// Capitalize the first level of a string.
 var capStr = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
+
+// Remove any line breaks from a string.
 var removeLineBreaks = (str) => {
   return String(str).replace(/\r?\n|\r/g, " ");
 };
+
+
+// If there are multiple commands lists, merges them into one.
+var mergeCommands = (argArray) => {
+  var listOfCommands = {};
+  for (var i = 0; i < argArray.length; i ++) {
+    for (let key in argArray[i]) {
+      listOfCommands[key] = argArray[i][key];
+    }
+  }
+
+  return listOfCommands;
+}
 
 /****************************************************/
 /* SERVER LOGIN   ----------------------------------*/
