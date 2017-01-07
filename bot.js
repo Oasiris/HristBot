@@ -242,7 +242,7 @@ var commandsPokemon = {
           fulfill(args[0]);  
         else {                   // If input is name query
           getDexNumber(args[0], function(res, dexNumber) {
-            if (res) reject();
+            if (res) reject(res);
             else fulfill(dexNumber);
           });
         };
@@ -302,29 +302,35 @@ var commandsPokemon = {
               entriesString += `"${entry}"\n`;
           }
 
-          let info = `#${paddedId}`
-               + "\n" + `${capStr(data.names[0].name)}`
-               + "\n" + `${capStr(data.genera[0].genus)} Pokemon`
-               + "\n" + `Color: ${capStr(data.color.name)}`
-               + "\n" + `Body: ${capStr(data.shape.name)}`
-               + "\n"
-               + "\n" + evolvesFromString
-               + "\n" + `Introduced in ${genString}`
-               + "\n" + `Found in ${capStr(data.habitat ? data.habitat.name : "unknown")} areas`
-               + "\n"
-               + "\n" + genderDetails
-               + "\n" + `Catch rate: ${data.capture_rate}`
-               + "\n" + `Hatch time: ${minHatch} - ${maxHatch} steps`
-               + "\n" + `Leveling rate: ${capStr(data.growth_rate.name)}`
-               + "\n" + `Base friendship: ${data.base_happiness}`
-               + "\n" + `Egg Groups: ${eggGroupString}`
-               + "\n"
-               + "\n" + "Pokedex Entries:"
-               + "\n" + entriesString;
+          // Retrieve the remaining data (TYPE and EVOLUTION) via querySimpleDex()
+          querySimpleDex(data.id, (err, typeString, evoToString) => {
+            let info = `#${paddedId}`
+                 + "\n" + `${capStr(data.names[0].name)}`
+                 + "\n" + `${capStr(data.genera[0].genus)} Pokemon`
+                 + "\n" + `${typeString}-type Pokemon`
+                 + "\n" + `Color: ${capStr(data.color.name)}`
+                 + "\n" + `Body: ${capStr(data.shape.name)}`
+                 + "\n"
+                 + "\n" + evolvesFromString
+                 + `${(evoToString) ? "\n" + evoToString : ""}`
+                 + "\n" + `Introduced in ${genString}`
+                 + "\n" + `Found in ${capStr(data.habitat ? data.habitat.name : "unknown")} areas`
+                 + "\n"
+                 + "\n" + genderDetails
+                 + "\n" + `Catch rate: ${data.capture_rate}`
+                 + "\n" + `Hatch time: ${minHatch} - ${maxHatch} steps`
+                 + "\n" + `Leveling rate: ${capStr(data.growth_rate.name)}`
+                 + "\n" + `Base friendship: ${data.base_happiness}`
+                 + "\n" + `Egg Groups: ${eggGroupString}`
+                 + "\n"
+                 + "\n" + "Pokedex Entries:"
+                 + "\n" + entriesString;  
 
-          oMsg.channel.sendMessage(info);
+            oMsg.channel.sendMessage(info);                    
+          });        
         });
       }, (res) => {
+        console.log("at this point res is " + res);
         oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, ${res}`);
       });
     } // ends process
@@ -334,8 +340,9 @@ var commandsPokemon = {
 };
 
 /****************************************************/
-/* HELPER FUNCTIONS: AQI QUERIES -------------------*/
+/* HELPER FUNCTIONS: AQI/LIBRARY QUERIES -----------*/
 /****************************************************/
+
 
 var queryPokeapi = (url, callback) => {
   let Request = unirest.get(url);
@@ -343,14 +350,51 @@ var queryPokeapi = (url, callback) => {
     'Accept': 'application/json',
     'User-Agent': 'Unirest Node.js for Oasiris\'s Discord HristBot'
   })
-
   .end((res) => {
     var data = res.body;
-    if (data)
-      callback(data);
-    else
-      callback(null);
+    if (data)  callback(data);
+    else       callback(null);
   })
+}
+
+
+/**
+ * Given a Pokemon's National Dex number, return the following data:
+ * - String containing Pokemon type(s)
+ * - String containing all evolutions and, if applicable, level of evolution
+ */
+var querySimpleDex = (id, callback) => {
+  // Start by finding object that corresponds to ID
+  var mon = simpleDex.filter((ele) => {
+    return (id == ele.national_id);
+  })[0];
+
+  // Create type string
+  let typeString;
+  let evoToString;
+
+  if (mon.types.length == 1)
+    typeString = `${capStr(mon.types[0])}`;
+  else
+    typeString = `${capStr(mon.types[0])}/${capStr(mon.types[1])}`;
+
+  // Create evolution TO string
+  if (mon.evolutions.length == 0) {
+    evoToString = null;
+  }
+  else if (mon.evolutions.length == 1) {
+    evoToString = `Evolves to ${mon.evolutions[0].to}`;
+    if (mon.evolutions[0].method == "level_up")
+      evoToString += ` at Level ${mon.evolutions[0].level}`;
+  }
+  else if (mon.evolutions.length >= 2) {
+    let evoList = [];
+    for (i in mon.evolutions)
+      evoList.push(mon.evolutions[i].to);
+    evoToString = `Evolves to ${stringifyList(evoList)}`;
+  }
+
+  callback(null, typeString, evoToString);
 }
 
 
@@ -359,7 +403,11 @@ var queryPokeapi = (url, callback) => {
 /* HELPER FUNCTIONS: LOW-LEVEL ---------------------*/
 /****************************************************/
 
-// Given a user ID, returns the guild nickname.
+
+/**
+ * Given a Discord User ID and a Guild object, returns that User's 
+ * nickname in that Guild.
+ */
 var getNickname = (str, guild) => {
   str = String(str);
   if (str.trim().length != 18) return;
@@ -367,17 +415,25 @@ var getNickname = (str, guild) => {
 };
 
 
-// Capitalize the first level of a string.
+/**
+ * Capitalizes the first letter of a string.
+ */
 var capStr = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
 
-// Remove any line breaks from a string.
+/**
+ * Removes any line breaks from a strong.
+ */
 var removeLineBreaks = (str) => {
   return String(str).replace(/\r?\n|\r/g, " ");
 };
 
 
-// If there are multiple commands lists, merges them into one.
+
+/**
+ * Accepts an array of multiple commands lists and merges them into 
+ * a single list.
+ */
 var mergeCommands = (argArray) => {
   var listOfCommands = {};
   for (var i = 0; i < argArray.length; i ++) {
@@ -389,6 +445,11 @@ var mergeCommands = (argArray) => {
   return listOfCommands;
 }
 
+
+/**
+ * Given the name of a Pokemon, retrieves that Pokemon's corresponding
+ * National Dex number according to the simplePokedex.
+ */
 var getDexNumber = (pokemonName, callback) => {
   let tempDex = simpleDex;
   tempDex = tempDex.filter((ele) => {
@@ -415,10 +476,29 @@ var getDexNumber = (pokemonName, callback) => {
   }
 
   return;
-}
+};
+
+
+/**
+ * Compile a list of strings into a single readable string list.
+ * "Tomato or Cherry", "Tomato, Cherry, or Onion"
+ */
+var stringifyList = (list) => {
+  if (list.length == 2)
+    return `${list[0]} or ${list[1]}`;
+  else { // meaning length is 3 or above
+    let listString = `${list[0]}, `;
+    for (let i = 1; i < list.length - 1; i ++)
+      listString += `${list[i]}, `;
+    listString += `or ${list[list.length - 1]}`;
+    return listString;
+  }
+};
+
 
 /****************************************************/
 /* SERVER LOGIN   ----------------------------------*/
 /****************************************************/
+
 
 bot.login(token); 
