@@ -230,147 +230,6 @@ var commandsPokemon = {
     description: "Shows general information on a given Pokemon species.",
     usage: "<Pokemon name OR National Dex number>",
     process: (bot, oMsg, args) => {
-      // Make sure input is valid
-      if (args.length != 1) {
-        oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, please supply either a Dex number or a Pokemon name.`);
-        return;
-      };
-
-      var typeString = "";
-      var nextEvoString = "Evolves to ";
-      var simpleData; // Data on the specified Pokemon, as retrieved from the simpleDex
-
-      // If pokemon name is entered, search local pokemon registry to dex number
-      if (isNaN(args[0])) {
-        let tempDex = simpleDex;
-        tempDex = tempDex.filter((ele) => {
-          return (ele.name.toLowerCase().indexOf(args[0].toLowerCase()) != -1);
-        });
-
-        if (tempDex.length == 1) { // The correct match
-          simpleData = args[0];
-          args[0] = tempDex[0].national_id;
-        } else if (tempDex.length == 0) { // Misc. error handling
-          oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, I couldn't find that Pokemon. Check your spelling and try again.`);
-          return;
-        } else if (tempDex.length > 10) {
-          oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, more than 10 Pokemon match the query, "${args[0]}". Please make your search more specific.`);
-          return;
-        } else { // number of matches is between 2 and 10
-          var res = `<@!${oMsg.author.id}>, your query returned multiple results. See below:\n\n`;
-          for (p in tempDex) { // note: p is a numeral index
-            res += `  • ${tempDex[p].name}\n`;
-          };
-          res += "\nCheck your spelling and try again.";
-          oMsg.channel.sendMessage(res);
-          return;
-        }
-      };
-
-      // GET request to PokeAPI v2
-      var RequestPokeapi = unirest.get("http://pokeapi.co/api/v2/pokemon-species/" + args[0]);
-      RequestPokeapi.header({
-        'Accept': 'application/json',
-        'User-Agent': 'Unirest Node.js for Oasiris\'s Discord HristBot'
-      })
-      .end((res) => {
-        var data = res.body;
-        var info;
-
-        if (!data || data.detail == "Not found.") {
-          oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, please supply a valid Pokedex ID. Note that Sun/Moon pokemon are not yet available!`); 
-          return;
-        };
-
-        // Some pre-processing to keep code organized
-        // Padding the ID
-        data.id = String(data.id);
-        var paddedId = data.id[2] ? data.id : (data.id[1] ? `0${data.id}` : `00${data.id}`);
-
-        // Gender
-        var genderDetails;
-        if (data.gender_rate == -1) {
-          genderDetails = "Genderless";
-        } else {
-          var femaleRate = Math.round(data.gender_rate / 8 * 1000) / 10;
-          var maleRate = 100 - femaleRate;
-          genderDetails = `${maleRate}% male, ${femaleRate}% female`;
-        };
-
-        // Hatch steps
-        var minHatch, maxHatch, hatchArray = new Array(4);
-        hatchArray[0] = 256 * data.hatch_counter;
-        hatchArray[1] = 256 * (data.hatch_counter + 1);
-        hatchArray[2] = 255 * (data.hatch_counter + 1);
-        hatchArray[3] = 257 * data.hatch_counter;
-        hatchArray.sort((a, b) => a - b);
-        minHatch = hatchArray[0];
-        maxHatch = hatchArray[3];
-
-        // Egg group
-        var eggGroupString;
-        if (data.egg_groups.length == 2)
-          eggGroupString = capStr(data.egg_groups[0].name) + " and " + capStr(data.egg_groups[1].name);
-        else 
-          eggGroupString = capStr(data.egg_groups[0].name);
-
-        // Evolves-from
-        var evolvesFromString;
-        if (data.evolves_from_species == null)
-          evolvesFromString = "Basic Pokemon";
-        else
-          evolvesFromString = `Evolves from ${capStr(data.evolves_from_species.name)}`;
-
-        // generation-i --> Generation I
-        var genNumeral = data.generation.name.slice(11).toUpperCase();
-
-        // Pokedex entries.
-        var entriesString = "";
-        var flavorTextArr = data.flavor_text_entries;
-        flavorTextArr = flavorTextArr.filter((ele) => {return (ele.language.name == "en" && (ele.version.name == "alpha-sapphire" || ele.version.name == "omega-ruby" || ele.version.name == "y" || ele.version.name == "x"))});
-        // console.log(flavorTextArr);
-
-        // console.log(flavorTextArr[1].flavor_text);
-        // console.log(entriesString.indexOf(flavorTextArr[1].flavor_text));
-
-        for (ele in flavorTextArr) {
-          entry = removeLineBreaks(flavorTextArr[ele].flavor_text);
-          if (entriesString.indexOf(entry) == -1) {
-            entriesString += '"' + entry + '"\n';
-          }
-        }
-
-        info = `#${paddedId}`
-             + "\n" + `${capStr(data.names[0].name)}`
-             + "\n" + `${capStr(data.genera[0].genus)} Pokemon`
-             + "\n" + `Color: ${capStr(data.color.name)}`
-             + "\n" + `Body: ${capStr(data.shape.name)}`
-             + "\n"
-             + "\n" + evolvesFromString
-             + "\n" + `Introduced in Generation ${genNumeral}`
-             + "\n" + `Found in ${capStr(data.habitat ? data.habitat.name : "unknown")} areas`
-             + "\n"
-             + "\n" + genderDetails
-             + "\n" + `Catch rate: ${data.capture_rate}`
-             + "\n" + `Hatch time: ${minHatch} - ${maxHatch} steps`
-             + "\n" + `Leveling rate: ${capStr(data.growth_rate.name)}`
-             + "\n" + `Base friendship: ${data.base_happiness}`
-             + "\n" + `Egg Groups: ${eggGroupString}`
-             + "\n"
-             + "\n" + "Pokedex Entries:"
-             + "\n" + entriesString;
-
-        oMsg.channel.sendMessage(info);
-      });
-
-      return;
-    }
-  },
-
-  "experimentdex": {
-    description: "Shows battle-related information on a given Pokemon species.",
-    usage: "<Pokemon name OR National Dex number>",
-    process: (bot, oMsg, args) => {
 
       // Make sure input is valid
       if (args.length == 0) {
@@ -390,7 +249,6 @@ var commandsPokemon = {
       });
 
       promise.then((id) => {
-        oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, Success! ID is ${id}.`);
         queryPokeapi('http://pokeapi.co/api/v2/pokemon-species/' + id, function(data) {
           // Error handling
           if (!data || data.detail == "Not found.") {
@@ -462,7 +320,7 @@ var commandsPokemon = {
                + "\n" + `Egg Groups: ${eggGroupString}`
                + "\n"
                + "\n" + "Pokedex Entries:"
-               + "\n" + entriesString;c
+               + "\n" + entriesString;
 
           oMsg.channel.sendMessage(info);
         });
