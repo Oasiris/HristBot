@@ -1,20 +1,23 @@
 {
-  "name": "HristBot",
+  "name": "MjolnirBot",
   "version": "0.0.1",
-  "description": "A gaming-oriented Discord Bot in discord.js",
-  "author": "Oasiris",
+  "description": "A lightweight test Discord Bot in discord.js",
+  "author": "David H. <davhong.99@gmail.com>",
+  "keywords": ["node", "discord", "discordjs", "bot", "chatbot"],
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/Oasiris/HristBot.git"
   },
-  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=6.0.0"
+  },
   "dependencies": {
-    "discord.js": "hydrabolt/discord.js#11.0.0",
-    "unirest": "*",
+    "discord.js": ">=11.0.0",
+    "unirest": "*"
   },
   "scripts": {
     "start": "node bot.js"
   },
-  "main": "bot.js",
-  "private": true,
+  "main": "bot.js"
 }

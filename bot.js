@@ -2,7 +2,7 @@
 // Core dependencies
 const Discord = require('discord.js');
 const bot = new Discord.Client();
-const authJson = require('./auth.json');
+const authJson = require('./auth');
 const token = authJson.token;
 
 // Extra dependencies
@@ -11,10 +11,11 @@ const unirest = require("unirest");
 // Imported data JSONs
 const simpleDex = require("./data/simplePokedex-v1");
 
+// Imported local libraries
+const sLib = require("./lib/stringLib");
+
+// Initialization and global variables
 var newUsers = new Discord.Collection();
-
-
-
 var myUsername;
 var myFullUsername;
 var myId;
@@ -94,7 +95,7 @@ bot.on('message', (msg) => {
   }
 
   // Compile all commands into a list
-  var listOfCommands = mergeCommands([commandsInfo, commandsPokemon]);
+  var listOfCommands = mergeCommands([commandsInfo, commandsRoles, commandsPokemon]);
 
   // SPECIAL COMMAND: "help" or "commands"
   if (cmdText == "help" || cmdText == "commands") {
@@ -146,6 +147,9 @@ var commandsHelp = {
 
 
 };
+
+
+// *********************************************************************************
 
 
 var commandsInfo = {
@@ -224,6 +228,19 @@ mentionable
 permissions
 */
 
+
+var commandsRoles = {
+  "showmypermissions": {
+    description: "Lists the Permissions object of the author user.",
+    usage: "",
+    process: (bot, oMsg, args) => {
+      console.log(oMsg.member.permissions);
+      return;
+    }
+  }
+}
+// *********************************************************************************
+
 var commandsPokemon = {
 
   "pokedex": {
@@ -280,15 +297,15 @@ var commandsPokemon = {
 
           // Egg group
           if (data.egg_groups.length == 2)
-            var eggGroupString = capStr(data.egg_groups[0].name) + " and " + capStr(data.egg_groups[1].name);
+            var eggGroupString = sLib.capStr(data.egg_groups[0].name) + " and " + sLib.capStr(data.egg_groups[1].name);
           else
-            var eggGroupString = capStr(data.egg_groups[0].name);
+            var eggGroupString = sLib.capStr(data.egg_groups[0].name);
 
           // Evolves-from
           if (data.evolves_from_species == null)
             var evolvesFromString = "Basic Pokemon";
           else
-            var evolvesFromString = `Evolves from ${capStr(data.evolves_from_species.name)}`;
+            var evolvesFromString = `Evolves from ${sLib.capStr(data.evolves_from_species.name)}`;
 
           // Generation
           let genString = `Generation ${data.generation.name.slice(11).toUpperCase()}`;
@@ -297,7 +314,7 @@ var commandsPokemon = {
           let entriesString = "";
           let entriesArr = data.flavor_text_entries.filter((ele) => {return ele.language.name == "en" && (ele.version.name == "alpha-sapphire" || ele.version.name == "omega-ruby" || ele.version.name == "y" || ele.version.name == "x")});
           for (ele in entriesArr) {
-            entry = removeLineBreaks(entriesArr[ele].flavor_text);
+            entry = sLib.removeLineBreaks(entriesArr[ele].flavor_text);
             if (entriesString.indexOf(entry) == -1) 
               entriesString += `"${entry}"\n`;
           }
@@ -305,21 +322,21 @@ var commandsPokemon = {
           // Retrieve the remaining data (TYPE and EVOLUTION) via querySimpleDex()
           querySimpleDex(data.id, (err, typeString, evoToString) => {
             let info = `#${paddedId}`
-                 + "\n" + `${capStr(data.names[0].name)}`
-                 + "\n" + `${capStr(data.genera[0].genus)} Pokemon`
+                 + "\n" + `${sLib.capStr(data.names[0].name)}`
+                 + "\n" + `${sLib.capStr(data.genera[0].genus)} Pokemon`
                  + "\n" + `${typeString}-type Pokemon`
-                 + "\n" + `Color: ${capStr(data.color.name)}`
-                 + "\n" + `Body: ${capStr(data.shape.name)}`
+                 + "\n" + `Color: ${sLib.capStr(data.color.name)}`
+                 + "\n" + `Body: ${sLib.capStr(data.shape.name)}`
                  + "\n"
                  + "\n" + evolvesFromString
                  + `${(evoToString) ? "\n" + evoToString : ""}`
                  + "\n" + `Introduced in ${genString}`
-                 + "\n" + `Found in ${capStr(data.habitat ? data.habitat.name : "unknown")} areas`
+                 + "\n" + `Found in ${sLib.capStr(data.habitat ? data.habitat.name : "unknown")} areas`
                  + "\n"
                  + "\n" + genderDetails
                  + "\n" + `Catch rate: ${data.capture_rate}`
                  + "\n" + `Hatch time: ${minHatch} - ${maxHatch} steps`
-                 + "\n" + `Leveling rate: ${capStr(data.growth_rate.name)}`
+                 + "\n" + `Leveling rate: ${sLib.capStr(data.growth_rate.name)}`
                  + "\n" + `Base friendship: ${data.base_happiness}`
                  + "\n" + `Egg Groups: ${eggGroupString}`
                  + "\n"
@@ -373,15 +390,13 @@ var querySimpleDex = (id, callback) => {
   let typeString;
   let evoToString;
 
-  if (mon.types.length == 1)
-    typeString = `${capStr(mon.types[0])}`;
-  else
-    typeString = `${capStr(mon.types[0])}/${capStr(mon.types[1])}`;
+  if (mon.types.length == 1)   typeString = `${sLib.capStr(mon.types[0])}`;
+  else                         typeString = `${sLib.capStr(mon.types[0])}/${sLib.capStr(mon.types[1])}`;
 
   // Create evolution TO string
-  if (mon.evolutions.length == 0) {
+  if (mon.evolutions.length == 0)
     evoToString = null;
-  }
+
   else if (mon.evolutions.length == 1) {
     evoToString = `Evolves to ${mon.evolutions[0].to}`;
     if (mon.evolutions[0].method == "level_up")
@@ -391,7 +406,7 @@ var querySimpleDex = (id, callback) => {
     let evoList = [];
     for (i in mon.evolutions)
       evoList.push(mon.evolutions[i].to);
-    evoToString = `Evolves to ${stringifyList(evoList)}`;
+    evoToString = `Evolves to ${sLib.stringifyList(evoList)}`;
   }
 
   callback(null, typeString, evoToString);
@@ -413,21 +428,6 @@ var getNickname = (str, guild) => {
   if (str.trim().length != 18) return;
   return guild.members.get(str).nickname;
 };
-
-
-/**
- * Capitalizes the first letter of a string.
- */
-var capStr = (str) => str.charAt(0).toUpperCase() + str.slice(1);
-
-
-/**
- * Removes any line breaks from a strong.
- */
-var removeLineBreaks = (str) => {
-  return String(str).replace(/\r?\n|\r/g, " ");
-};
-
 
 
 /**
@@ -476,23 +476,6 @@ var getDexNumber = (pokemonName, callback) => {
   }
 
   return;
-};
-
-
-/**
- * Compile a list of strings into a single readable string list.
- * "Tomato or Cherry", "Tomato, Cherry, or Onion"
- */
-var stringifyList = (list) => {
-  if (list.length == 2)
-    return `${list[0]} or ${list[1]}`;
-  else { // meaning length is 3 or above
-    let listString = `${list[0]}, `;
-    for (let i = 1; i < list.length - 1; i ++)
-      listString += `${list[i]}, `;
-    listString += `or ${list[list.length - 1]}`;
-    return listString;
-  }
 };
 
 
