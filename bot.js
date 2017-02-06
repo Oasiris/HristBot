@@ -95,7 +95,7 @@ bot.on('message', (msg) => {
   }
 
   // Compile all commands into a list
-  var listOfCommands = mergeCommands([commandsInfo, commandsRoles, commandsPokemon]);
+  var listOfCommands = mergeCommands([commandsInfo, commandsPokemon]);
 
   // SPECIAL COMMAND: "help" or "commands"
   if (cmdText == "help" || cmdText == "commands") {
@@ -228,17 +228,6 @@ mentionable
 permissions
 */
 
-
-var commandsRoles = {
-  "showmypermissions": {
-    description: "Lists the Permissions object of the author user.",
-    usage: "",
-    process: (bot, oMsg, args) => {
-      console.log(oMsg.member.permissions);
-      return;
-    }
-  }
-}
 // *********************************************************************************
 
 var commandsPokemon = {
