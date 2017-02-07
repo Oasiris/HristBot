@@ -85,6 +85,14 @@ module.exports = {
     }
   },
 
+  "source": {
+    description: "Gets a link to the GitHub repository containing this bot's source code",
+    process: (bot, oMsg) => {
+      oMsg.channel.sendMessage(`You can find my source code here: http://github.com/Oasiris/HristBot :grinning:`);
+      return;
+    }
+  }
+
 
 };
 
