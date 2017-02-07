@@ -242,7 +242,7 @@ var getDexNumber = (input, callback) => {
   }
   // No results found.
   else if (tempDex.length == 0) {
-    var res = "I couldn't find that Pokemon. Check your spelling and try again.";
+    var res = "I couldn't find that Pokemon. Check your spelling and try again. (Note that Sun/Moon pokemon are not yet available.)";
     callback(res, null);
   } 
   // There were multiple Pokemon that matched the name search.

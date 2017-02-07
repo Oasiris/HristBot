@@ -5,6 +5,7 @@
     "server_ip_address": "127.0.0.1",
     "avatar_url": "",
     "google_api_key": "",
+    "cleverbot_api_key": "",
     "custom_search_id": "",
     "giphy_api_key": "",
     "imgur_client_id": "",

@@ -3,10 +3,24 @@ module.exports = {
   "who": {
     description: "Bot introduces themselves.",
     process: (bot, oMsg) => {
-      oMsg.channel.sendMessage(`Hi. My full name is ${bot.user.username}#${bot.user.discriminator}, but you can call me ${bot.user.username}.`);
+      let message = `Hi. My full name is ${bot.user.username}#${bot.user.discriminator}, ` +
+      `but you can call me ${bot.user.username}.`
+      + `\n` + `I'm a Discord bot made for gaming, but right now, my features are scarce!`
+      + `\n` + `Give my pokedex a go: \`$pokedex <Pokemon name>\``
+      + `\n` + `I'm named after youngest of the three Valkyries, Hrist, who has a predisposition for deception and darkness. My favorite color is dark purple.`
+      + `\n\n` + `I was created by David. You can find my source code here: https://github.com/Oasiris/HristBot`;
+      oMsg.channel.sendMessage(message);
       return;
     }
   },
+
+  // "chat": {
+  //   description: "Under construction.",
+  //   process: (bot, oMsg) => {
+  //     oMsg.channel.sendMessage("Sorry, I'm not smart enough yet.");
+  //     return;
+  //   }
+  // },
 
   "id": {
     description: "Displays the ID, either of the specified user or of the message author.",
@@ -46,6 +60,13 @@ module.exports = {
       oMsg.channel.sendMessage(imageUrl);
 
       return;
+    }
+  },
+
+  "kappa": {
+    description: "Guess.",
+    process: (bot, oMsg) => {
+      oMsg.channel.sendMessage("https://t7.rbxcdn.com/fe204b527383fdc960ca3e19c47cc9f2");
     }
   },
 
