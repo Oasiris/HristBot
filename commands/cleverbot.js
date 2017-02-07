@@ -15,6 +15,7 @@ module.exports = {
   "chat": {
     description: "Chats with Cleverbot. Type `$chat NEW` to reset the conversation.",
     usage: "<input>",
+    help: function(){},
     process: (bot, oMsg, args) => {
       // User didn't enter an actual message to send
       if (args.length == 0) {

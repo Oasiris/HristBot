@@ -1,8 +1,9 @@
 const cPokedex = require('./pokedex');
 const cInfo = require('./info');
 const cCleverbot = require('./cleverbot');
+const cUtility = require('./utility');
 
-const allCommands = [cPokedex, cInfo, cCleverbot];
+const allCommands = [cPokedex, cInfo, cCleverbot, cUtility];
 
 var mergeCommands = (objectArr) => {
   var listOfCommands = {};
