@@ -14,6 +14,9 @@ const simpleDex = require("./data/simplePokedex-v1");
 // Imported local libraries
 const sLib = require("./lib/stringLib");
 
+// Imported COMMANDS ///////////////////////////////////////////////////////////////////////////////////////
+const listOfCommands = require("./commands/");
+
 // Initialization and global variables
 var newUsers = new Discord.Collection();
 var myUsername;
@@ -95,7 +98,10 @@ bot.on('message', (msg) => {
   }
 
   // Compile all commands into a list
-  var listOfCommands = mergeCommands([commandsInfo, commandsPokemon]);
+  // var listOfCommands = mergeCommands([commandsInfo, commandsPokemon]);
+  ////////////////////////////////////////////////////////////////////////////////////////
+
+  console.log(listOfCommands);
 
   // SPECIAL COMMAND: "help" or "commands"
   if (cmdText == "help" || cmdText == "commands") {

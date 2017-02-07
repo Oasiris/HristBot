@@ -1,4 +1,4 @@
-module.exports.infoCommands = {
+module.exports = {
   "who": {
     description: "Bot introduces themselves.",
     process: (bot, oMsg) => {
