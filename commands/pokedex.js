@@ -192,7 +192,7 @@ var getTypeAndEvolutions = (id, callback) => {
 
   else if (mon.evolutions.length == 1) {
     evoToString = `Evolves to ${mon.evolutions[0].to}`;
-    if (mon.evolutions[0].method == "level_up")x
+    if (mon.evolutions[0].method == "level_up")
       evoToString += ` at Level ${mon.evolutions[0].level}`;
   }
   else if (mon.evolutions.length >= 2) {
@@ -244,6 +244,17 @@ var getDexNumber = (input, callback) => {
   } 
   // There were multiple Pokemon that matched the name search.
   else if (tempDex.length > 1 && tempDex.length <= numLimit) {
+    
+    // If the strings match EXACTLY
+    let perfectMatch = tempDex.filter((ele) => {
+      return (ele.name.toLowerCase() == pokemonName.toLowerCase());
+    })
+    if (perfectMatch.length == 1) {
+      callback(null, perfectMatch[0].national_id);
+      return;
+    }
+
+
     console.log("MULTIPLE!");
     var res = "Your query returned multiple results. See below:\n\n";
     for (p in tempDex) {
