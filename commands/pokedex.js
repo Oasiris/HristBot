@@ -117,7 +117,10 @@ var createPokedexEntry = (data, callback) => {
 
   // Retrieve the remaining data (TYPE and EVOLUTION) via querySimpleDex()
   getTypeAndEvolutions(data.id, (err, typeString, evoToString) => {
-    let info = `#${paddedId}`
+    let info = 
+    `https://img.pokemondb.net/artwork/${data.names[0].name.toLowerCase()}.jpg`
+    // `http://pokedream.com/pokedex/images/sugimori/${paddedId}.jpg`
+         + "\n" + `#${paddedId}`
          + "\n" + `${sLib.capStr(data.names[0].name)}`
          + "\n" + `${sLib.capStr(data.genera[0].genus)} Pokemon`
          + "\n" + `${typeString}-type Pokemon`
