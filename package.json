@@ -1,9 +1,15 @@
 {
-  "name": "MjolnirBot",
+  "name": "HristBot",
   "version": "0.0.1",
-  "description": "A lightweight test Discord Bot in discord.js",
+  "description": "A Discord Bot for gaming in discord.js",
   "author": "David H. <davhong.99@gmail.com>",
-  "keywords": ["node", "discord", "discordjs", "bot", "chatbot"],
+  "keywords": [
+    "node",
+    "discord",
+    "discordjs",
+    "bot",
+    "chatbot"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -14,7 +20,7 @@
   },
   "dependencies": {
     "discord.js": ">=11.0.0",
-    "unirest": "*"
+    "request": "^2.79.0"
   },
   "scripts": {
     "start": "node bot.js"
