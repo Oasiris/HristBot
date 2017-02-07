@@ -9,10 +9,19 @@ module.exports = {
   },
 
   "id": {
-    description: "Return the ID, either of the specified user or of the message author.",
-    process: (bot, oMsg) => {
-      oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, your user ID is ${oMsg.author.id}.`);
-      return;
+    description: "Displays the ID, either of the specified user or of the message author.",
+    process: (bot, oMsg, args) => {
+      if (args.length == 0) { // Return ID of message author
+        oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, your user ID is ${oMsg.author.id}.`);
+        return;
+      } else { // A user has been specified.
+        let input = args[0];
+        // If username with discriminator
+        if (input[0] == '<' && input.length == 21) {
+          oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, that user's ID is ${input.slice(2, 20)}.`);
+          return;
+        }
+      }
     }
   },
 
@@ -60,8 +69,18 @@ module.exports = {
 
 
 /****************************************************/
+/* MAIN COMMAND FUNCTIONS --------------------------*/
+/****************************************************/
+
+
+
+/****************************************************/
 /* HELPER FUNCTIONS: LOW-LEVEL ---------------------*/
 /****************************************************/
+
+
+
+
 
 
 /**
