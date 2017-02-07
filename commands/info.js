@@ -25,7 +25,7 @@ module.exports = {
   "id": {
     description: "Displays the ID, either of the specified user or of the message author.",
     process: (bot, oMsg, args) => {
-      if (args.length == 0) { // Return ID of message author
+      if (!args || args.length == 0) { // Return ID of message author
         oMsg.channel.sendMessage(`<@!${oMsg.author.id}>, your user ID is ${oMsg.author.id}.`);
         return;
       } else { // A user has been specified.
