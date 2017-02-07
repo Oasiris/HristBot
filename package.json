@@ -20,8 +20,7 @@
   },
   "dependencies": {
     "discord.js": ">=11.0.0",
-    "request": "^2.79.0",
-    "unirest": "^0.5.1"
+    "request": "^2.79.0"
   },
   "scripts": {
     "start": "node bot.js"

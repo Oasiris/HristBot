@@ -3,8 +3,6 @@ const commandsInfo = require('./info');
 
 const allCommands = [commandsPokedex, commandsInfo];
 
-
-
 var mergeCommands = (objectArr) => {
   var listOfCommands = {};
   for (var i = 0; i < objectArr.length; i ++) {
@@ -12,8 +10,6 @@ var mergeCommands = (objectArr) => {
       listOfCommands[key] = objectArr[i][key];
     }
   }
-
-  console.log(listOfCommands);
 
   return listOfCommands;
 }

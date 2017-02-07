@@ -1,3 +1,4 @@
+
 module.exports = {
   "who": {
     description: "Bot introduces themselves.",
@@ -55,4 +56,20 @@ module.exports = {
   },
 
 
+};
+
+
+/****************************************************/
+/* HELPER FUNCTIONS: LOW-LEVEL ---------------------*/
+/****************************************************/
+
+
+/**
+ * Given a Discord User ID and a Guild object, returns that User's 
+ * nickname in that Guild.
+ */
+var getNickname = (str, guild) => {
+  str = String(str);
+  if (str.trim().length != 18) return;
+  return guild.members.get(str).nickname;
 };
