@@ -1,7 +1,7 @@
 ![logo](http://i.imgur.com/3tdW8WW.png)
 # HirstBot - Discord Gaming Bot
 
-[<img src=https://img.shields.io/badge/discord.js-v11.x-yellow.svg>](http://discordjs.readthedocs.io/en/8.2.0/) [<img src=https://img.shields.io/badge/node-v6.x-brightgreen.svg>](https://nodejs.org/dist/latest-v4.x/docs/api/) <img src=https://img.shields.io/npm/l/express.svg>
+[<img src=https://img.shields.io/badge/discord.js-v11.x-yellow.svg>](https://discord.js.org/#/) [<img src=https://img.shields.io/badge/node-v6.x-brightgreen.svg>](https://nodejs.org/dist/latest-v6.x/docs/api/) <img src=https://img.shields.io/npm/l/express.svg>
 
 _**A Discord bot built for gaming.**_
 
@@ -22,4 +22,4 @@ As I expand the bot's functionality, I hope to add:
 
 This bot is published under the **MIT License** as of February 2017.
 
-*Hrist is named after the youngest of the three Valkyries with a predisposition for deception and darkness.*
+*Hrist is named after the eldest of the three Valkyries with a predisposition for deception and darkness.*
